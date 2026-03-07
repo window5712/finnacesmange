@@ -1,14 +1,49 @@
-import { LucideIcon } from "lucide-react";
+"use client";
+
+import {
+  LucideIcon,
+  TrendingUp,
+  Receipt as ReceiptIcon,
+  Users,
+  Wallet,
+  PiggyBank,
+  Heart,
+  User,
+  BarChart3,
+  Building2,
+  Target,
+  PieChart,
+  Activity,
+  History,
+} from "lucide-react";
 import { ReactNode } from "react";
+
+const iconMap = {
+  TrendingUp,
+  Receipt: ReceiptIcon,
+  Users,
+  Wallet,
+  PiggyBank,
+  Heart,
+  User,
+  BarChart3,
+  Building2,
+  Target,
+  PieChart,
+  Activity,
+  History,
+};
 
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
-  icon?: LucideIcon;
+  icon?: keyof typeof iconMap;
   action?: ReactNode;
 }
 
-export function PageHeader({ title, subtitle, icon: Icon, action }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, icon: iconName, action }: PageHeaderProps) {
+  const Icon = iconName ? iconMap[iconName] : null;
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">

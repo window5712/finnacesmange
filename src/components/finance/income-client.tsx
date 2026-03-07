@@ -42,7 +42,7 @@ export function IncomeClient({ income }: Props) {
       <PageHeader
         title="Income"
         subtitle={`${income.length} records · Total: ${formatCurrency(total)}`}
-        icon={TrendingUp}
+        icon="TrendingUp"
         action={
           <Button
             onClick={() => { setEditItem(null); setDrawerOpen(true); }}

@@ -3,16 +3,21 @@
 import { encodedRedirect } from "@/utils/utils";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createClient } from "../../supabase/server";
+import { createClient } from "@supabase/server";
+import { logger } from "@/utils/logger";
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
   const fullName = formData.get("full_name")?.toString() || '';
+  
+  logger.track("sign_up_attempt", { email });
+  
   const supabase = await createClient();
   const origin = (await headers()).get("origin");
 
   if (!email || !password) {
+    logger.warn("Sign-up failed: Missing credentials", { email });
     return encodedRedirect(
       "error",
       "/sign-up",
@@ -32,15 +37,13 @@ export const signUpAction = async (formData: FormData) => {
     },
   });
 
-  console.log("After signUp", error);
-
-
   if (error) {
-    console.error(error.code + " " + error.message);
+    logger.error("Sign-up Auth Error", { code: error.code, message: error.message });
     return encodedRedirect("error", "/sign-up", error.message);
   }
 
   if (user) {
+    logger.info("Sign-up successful, attempting profile creation", { userId: user.id });
     try {
       const { error: updateError } = await supabase
         .from('users')
@@ -55,10 +58,13 @@ export const signUpAction = async (formData: FormData) => {
         });
 
       if (updateError) {
-        console.error('Error updating user profile:', updateError);
+        logger.error("Profile Creation Error", { code: updateError.code, message: updateError.message });
+      } else {
+        logger.info("Profile created successfully", { email });
+        logger.track("user_profile_created", { email, userId: user.id });
       }
     } catch (err) {
-      console.error('Error in user profile creation:', err);
+      logger.error("Unexpected Profile Creation Error", err);
     }
   }
 
@@ -72,6 +78,9 @@ export const signUpAction = async (formData: FormData) => {
 export const signInAction = async (formData: FormData) => {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  
+  logger.track("sign_in_attempt", { email });
+  
   const supabase = await createClient();
 
   const { error } = await supabase.auth.signInWithPassword({
@@ -80,9 +89,12 @@ export const signInAction = async (formData: FormData) => {
   });
 
   if (error) {
+    logger.error("Sign-in Error", { message: error.message, code: error.status });
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
+  logger.info("Sign-in successful", { email });
+  logger.track("sign_in_success", { email });
   return redirect("/dashboard");
 };
 
@@ -127,15 +139,15 @@ export const resetPasswordAction = async (formData: FormData) => {
   const confirmPassword = formData.get("confirmPassword") as string;
 
   if (!password || !confirmPassword) {
-    encodedRedirect(
+    return encodedRedirect(
       "error",
-      "/protected/reset-password",
+      "/dashboard/reset-password",
       "Password and confirm password are required",
     );
   }
 
   if (password !== confirmPassword) {
-    encodedRedirect(
+    return encodedRedirect(
       "error",
       "/dashboard/reset-password",
       "Passwords do not match",
@@ -147,14 +159,14 @@ export const resetPasswordAction = async (formData: FormData) => {
   });
 
   if (error) {
-    encodedRedirect(
+    return encodedRedirect(
       "error",
       "/dashboard/reset-password",
       "Password update failed",
     );
   }
 
-  encodedRedirect("success", "/protected/reset-password", "Password updated");
+  return encodedRedirect("success", "/dashboard/reset-password", "Password updated");
 };
 
 export const signOutAction = async () => {

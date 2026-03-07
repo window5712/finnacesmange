@@ -36,7 +36,7 @@ export function SalariesClient({ salaries }: Props) {
       <PageHeader
         title="Salaries"
         subtitle={`${salaries.length} records · Total: ${formatCurrency(total)}`}
-        icon={Users}
+        icon="Users"
         action={
           <Button
             onClick={() => { setEditItem(null); setDrawerOpen(true); }}

@@ -43,9 +43,20 @@ const personalNavItems = [
   { href: "/dashboard/personal/savings", label: "Savings Goals", icon: Target },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ userRole = "user", userName = "User", userEmail = "" }: { userRole?: string, userName?: string, userEmail?: string }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+
+  const isAdmin = userRole === "admin";
+  const displayNavItems = [...navItems];
+
+  if (isAdmin) {
+    displayNavItems.push({
+      href: "/dashboard/users",
+      label: "User Management",
+      icon: Users
+    });
+  }
 
   return (
     <>
@@ -86,7 +97,7 @@ export function AppSidebar() {
               Company
             </p>
           )}
-          {navItems.map((item) => {
+          {displayNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
             return (
@@ -111,7 +122,7 @@ export function AppSidebar() {
 
           {!collapsed && (
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[hsl(var(--sidebar-foreground))]/40 px-3 mb-2">
-              Personal
+              Personal — {userName.split(" ")[0]}
             </p>
           )}
           {personalNavItems.map((item) => {
@@ -136,8 +147,25 @@ export function AppSidebar() {
           })}
         </nav>
 
-        {/* Sign Out */}
-        <div className={cn("p-3 border-t", "border-[hsl(var(--sidebar-border))]")}>
+        {/* User Profile & Sign Out */}
+        <div className={cn("mt-auto flex flex-col border-t border-[hsl(var(--sidebar-border))] p-3 gap-2")}>
+          {!collapsed && (
+            <div className="flex items-center gap-3 px-3 py-2">
+              <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center flex-shrink-0">
+                <span className="text-violet-700 font-semibold text-xs">
+                  {userName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-[hsl(var(--sidebar-foreground))] truncate">
+                  {userName}
+                </p>
+                <p className="text-[10px] text-[hsl(var(--sidebar-foreground))]/60 truncate">
+                  {userEmail}
+                </p>
+              </div>
+            </div>
+          )}
           <form action={signOutAction}>
             <button
               type="submit"
@@ -155,7 +183,7 @@ export function AppSidebar() {
 
       {/* Mobile Bottom Nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t bg-white flex items-center justify-around px-2 py-2">
-        {[...navItems.slice(0, 4), { href: "/dashboard/personal", label: "Personal", icon: User }].map((item) => {
+        {[...displayNavItems.slice(0, 4), { href: "/dashboard/personal", label: "Personal", icon: User }].map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || (item.href === "/dashboard/personal" && pathname?.startsWith("/dashboard/personal"));
           return (

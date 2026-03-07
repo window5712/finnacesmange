@@ -32,9 +32,7 @@ export default async function ResetPassword(props: {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium">
-                  New password
-                </Label>
+                <Label htmlFor="password" dangerouslySetInnerHTML={{ __html: 'New password' }} className="text-sm font-medium" />
                 <Input
                   id="password"
                   type="password"
@@ -42,13 +40,29 @@ export default async function ResetPassword(props: {
                   placeholder="New password"
                   required
                   className="w-full"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const score = val.length < 8 ? 0 : [/[a-z]/, /[A-Z]/, /[0-9]/, /[^a-zA-Z0-9]/].filter(r => r.test(val)).length;
+                    const meter = document.getElementById('password-strength-meter');
+                    const text = document.getElementById('password-strength-text');
+                    if (meter && text) {
+                      const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500'];
+                      const labels = ['Too weak', 'Weak', 'Fair', 'Good', 'Strong'];
+                      meter.className = `h-1 rounded-full transition-all duration-300 ${colors[score] || 'bg-muted'}`;
+                      meter.style.width = `${(score + 1) * 20}%`;
+                      text.innerText = labels[score] || 'Too weak';
+                      text.className = `text-[10px] font-medium mt-1 ${score > 2 ? 'text-green-600' : 'text-muted-foreground'}`;
+                    }
+                  }}
                 />
+                <div className="w-full bg-muted h-1 rounded-full mt-2 overflow-hidden">
+                  <div id="password-strength-meter" className="h-full w-0 bg-muted transition-all duration-300"></div>
+                </div>
+                <p id="password-strength-text" className="text-[10px] text-muted-foreground mt-1">Enter a password</p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                  Confirm password
-                </Label>
+                <Label htmlFor="confirmPassword" dangerouslySetInnerHTML={{ __html: 'Confirm password' }} className="text-sm font-medium" />
                 <Input
                   id="confirmPassword"
                   type="password"

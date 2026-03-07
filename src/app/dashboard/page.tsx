@@ -1,4 +1,4 @@
-import { createClient } from "../../../supabase/server";
+import { createClient } from "@supabase/server";
 import { StatCard } from "@/components/finance/stat-card";
 import { calculateFinanceSummary, formatCurrency } from "@/types/finance";
 import {
@@ -57,34 +57,34 @@ export default async function DashboardPage() {
       <div className="mb-3">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">This Month</p>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <StatCard title="Monthly Income" value={monthlyIncome} icon={TrendingUp} variant="teal" delay={0} />
-          <StatCard title="Monthly Expenses" value={monthlyExpenses} icon={Receipt} delay={1} iconBg="bg-amber-50" iconColor="text-amber-600" />
-          <StatCard title="Salaries Paid" value={monthlySalaries} icon={Users} delay={2} iconBg="bg-blue-50" iconColor="text-blue-600" />
+          <StatCard title="Monthly Income" value={monthlyIncome} icon="TrendingUp" variant="teal" delay={0} />
+          <StatCard title="Monthly Expenses" value={monthlyExpenses} icon="Receipt" delay={1} iconBg="bg-amber-50" iconColor="text-amber-600" />
+          <StatCard title="Salaries Paid" value={monthlySalaries} icon="Users" delay={2} iconBg="bg-blue-50" iconColor="text-blue-600" />
         </div>
       </div>
 
       <div className="mb-3 mt-6">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Overall Balance</p>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <StatCard title="Total Income" value={summary.totalIncome} icon={BarChart3} variant="green" delay={3} />
-          <StatCard title="Total Expenses" value={summary.totalExpenses} icon={Receipt} variant="red" delay={4} />
-          <StatCard title="Remaining Balance" value={summary.remainingBalance} icon={Wallet} variant={summary.remainingBalance >= 0 ? "default" : "red"} delay={5} />
+          <StatCard title="Total Income" value={summary.totalIncome} icon="BarChart3" variant="green" delay={3} />
+          <StatCard title="Total Expenses" value={summary.totalExpenses} icon="Receipt" variant="red" delay={4} />
+          <StatCard title="Remaining Balance" value={summary.remainingBalance} icon="Wallet" variant={summary.remainingBalance >= 0 ? "default" : "red"} delay={5} />
         </div>
       </div>
 
       <div className="mt-6 mb-3">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Profit Distribution</p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Gross Profit" value={summary.grossProfit} icon={TrendingUp} delay={6} iconBg="bg-teal-50" iconColor="text-teal-700" />
-          <StatCard title="Charity (5%)" value={summary.charity} icon={Heart} variant="amber" delay={7} />
-          <StatCard title="Yassen's Share (47.5%)" value={summary.partnerShare} icon={User} delay={8} iconBg="bg-violet-50" iconColor="text-violet-600" />
-          <StatCard title="Aryan's Share (47.5%)" value={summary.partnerShare} icon={User} delay={9} iconBg="bg-indigo-50" iconColor="text-indigo-600" />
+          <StatCard title="Gross Profit" value={summary.grossProfit} icon="TrendingUp" delay={6} iconBg="bg-teal-50" iconColor="text-teal-700" />
+          <StatCard title="Charity (5%)" value={summary.charity} icon="Heart" variant="amber" delay={7} />
+          <StatCard title="Yassen's Share (47.5%)" value={summary.partnerShare} icon="User" delay={8} iconBg="bg-violet-50" iconColor="text-violet-600" />
+          <StatCard title="Aryan's Share (47.5%)" value={summary.partnerShare} icon="User" delay={9} iconBg="bg-indigo-50" iconColor="text-indigo-600" />
         </div>
       </div>
 
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <StatCard title="Investment Reserve" value={summary.totalInvestments} icon={PiggyBank} delay={10} iconBg="bg-emerald-50" iconColor="text-emerald-600" />
-        <StatCard title="Company Budget (Net Distributable)" value={summary.netDistributable} icon={Building2} delay={11} iconBg="bg-teal-50" iconColor="text-teal-700" />
+        <StatCard title="Investment Reserve" value={summary.totalInvestments} icon="PiggyBank" delay={10} iconBg="bg-emerald-50" iconColor="text-emerald-600" />
+        <StatCard title="Company Budget (Net Distributable)" value={summary.netDistributable} icon="Building2" delay={11} iconBg="bg-teal-50" iconColor="text-teal-700" />
       </div>
 
       <div className="mt-8">

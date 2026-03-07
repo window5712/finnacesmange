@@ -43,7 +43,7 @@ export function SavingsGoalsClient({ goals }: Props) {
       <PageHeader
         title="Savings Goals"
         subtitle={`${goals.length} goals · Saved ${formatCurrency(totalSaved)} of ${formatCurrency(totalTarget)}`}
-        icon={Target}
+        icon="Target"
         action={
           <Button
             onClick={() => { setEditItem(null); setDrawerOpen(true); }}

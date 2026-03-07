@@ -80,7 +80,7 @@ export default async function ProfitPage() {
       <PageHeader
         title="Profit Distribution"
         subtitle="Auto-calculated breakdown of profit sharing"
-        icon={PieChart}
+        icon="PieChart"
       />
 
       <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">

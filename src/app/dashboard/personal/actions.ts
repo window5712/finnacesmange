@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "../../../../supabase/server";
+import { createClient } from "@supabase/server";
 import { revalidatePath } from "next/cache";
 
 async function logActivity(
@@ -198,5 +198,18 @@ export async function deleteSavingsGoal(id: string) {
   await logActivity(supabase, "Deleted savings goal", "personal_savings_goals", id);
   revalidatePath("/dashboard/personal");
   revalidatePath("/dashboard/personal/savings");
+  return { success: true };
+}
+
+// Security Actions
+export async function changeUserPassword(password: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: error.message };
+  
+  await logActivity(supabase, "Updated password", "security", user.id);
   return { success: true };
 }

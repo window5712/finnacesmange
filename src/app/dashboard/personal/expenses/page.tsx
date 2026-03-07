@@ -1,4 +1,4 @@
-import { createClient } from "../../../../../supabase/server";
+import { createClient } from "@supabase/server";
 import { PersonalExpensesClient } from "@/components/finance/personal-expenses-client";
 
 export default async function PersonalExpensesPage() {

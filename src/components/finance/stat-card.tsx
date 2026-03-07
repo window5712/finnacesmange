@@ -1,13 +1,42 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { LucideIcon } from "lucide-react";
+import {
+  LucideIcon,
+  TrendingUp,
+  Receipt,
+  Users,
+  Wallet,
+  PiggyBank,
+  Heart,
+  User,
+  BarChart3,
+  Building2,
+  Target,
+  ArrowUpRight,
+  ArrowDownRight,
+} from "lucide-react";
 import { useEffect, useState } from "react";
+
+const iconMap = {
+  TrendingUp,
+  Receipt,
+  Users,
+  Wallet,
+  PiggyBank,
+  Heart,
+  User,
+  BarChart3,
+  Building2,
+  Target,
+  ArrowUpRight,
+  ArrowDownRight,
+};
 
 interface StatCardProps {
   title: string;
   value: number;
-  icon: LucideIcon;
+  icon: keyof typeof iconMap;
   iconColor?: string;
   iconBg?: string;
   prefix?: string;
@@ -45,16 +74,17 @@ function useCountUp(target: number, duration: number = 1000) {
 export function StatCard({
   title,
   value,
-  icon: Icon,
+  icon: iconName,
   iconColor,
   iconBg,
-  prefix = "$",
+  prefix = "PKR ",
   suffix,
   trend,
   delay = 0,
   className,
   variant = "default",
 }: StatCardProps) {
+  const Icon = iconMap[iconName];
   const animatedValue = useCountUp(Math.abs(value), 800 + delay * 100);
   const [visible, setVisible] = useState(false);
 

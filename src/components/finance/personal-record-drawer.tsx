@@ -138,7 +138,7 @@ export function PersonalRecordDrawer({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="amount">Amount ($) *</Label>
+                  <Label htmlFor="amount">Amount (PKR) *</Label>
                   <Input
                     id="amount"
                     name="amount"
@@ -212,7 +212,7 @@ export function PersonalRecordDrawer({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="amount">Amount ($) *</Label>
+                  <Label htmlFor="amount">Amount (PKR) *</Label>
                   <Input
                     id="amount"
                     name="amount"
@@ -256,7 +256,7 @@ export function PersonalRecordDrawer({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="target_amount">Target Amount ($) *</Label>
+                  <Label htmlFor="target_amount">Target Amount (PKR) *</Label>
                   <Input
                     id="target_amount"
                     name="target_amount"
@@ -269,7 +269,7 @@ export function PersonalRecordDrawer({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="current_amount">Saved So Far ($)</Label>
+                  <Label htmlFor="current_amount">Saved So Far (PKR)</Label>
                   <Input
                     id="current_amount"
                     name="current_amount"

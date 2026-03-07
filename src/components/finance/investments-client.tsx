@@ -36,7 +36,7 @@ export function InvestmentsClient({ investments }: Props) {
       <PageHeader
         title="Investments"
         subtitle={`${investments.length} records · Total: ${formatCurrency(total)}`}
-        icon={PiggyBank}
+        icon="PiggyBank"
         action={
           <Button
             onClick={() => { setEditItem(null); setDrawerOpen(true); }}

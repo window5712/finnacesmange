@@ -1,4 +1,4 @@
-import { createClient } from "../../../../supabase/server";
+import { createClient } from "@supabase/server";
 import { StatCard } from "@/components/finance/stat-card";
 import { calculatePersonalSummary, formatCurrency } from "@/types/finance";
 import {
@@ -11,20 +11,23 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
+import { ChangePasswordForm } from "@/components/finance/change-password-form";
 
 export default async function PersonalDashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const [incomeRes, expensesRes, savingsRes] = await Promise.all([
+  const [incomeRes, expensesRes, savingsRes, profileRes] = await Promise.all([
     supabase.from("personal_income").select("*").eq("user_id", user!.id).order("date", { ascending: false }),
     supabase.from("personal_expenses").select("*").eq("user_id", user!.id).order("date", { ascending: false }),
     supabase.from("personal_savings_goals").select("*").eq("user_id", user!.id).order("created_at", { ascending: false }),
+    supabase.from("users").select("full_name").eq("id", user!.id).single(),
   ]);
 
   const income = incomeRes.data || [];
   const expenses = expensesRes.data || [];
   const savings = savingsRes.data || [];
+  const userName = profileRes.data?.full_name || user!.email?.split("@")[0] || "User";
 
   const summary = calculatePersonalSummary(income, expenses, savings);
 
@@ -37,7 +40,7 @@ export default async function PersonalDashboardPage() {
           </div>
           <div>
             <h1 className="text-3xl font-bold text-foreground" style={{ fontFamily: "Fraunces, serif" }}>
-              Personal Finance
+              Welcome back, {userName.split(" ")[0]} 👋
             </h1>
             <p className="text-muted-foreground text-sm">
               Your personal income, expenses & savings goals
@@ -49,12 +52,12 @@ export default async function PersonalDashboardPage() {
       <div className="mb-3">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">This Month</p>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <StatCard title="Monthly Income" value={summary.monthlyIncome} icon={TrendingUp} delay={0} iconBg="bg-violet-50" iconColor="text-violet-600" />
-          <StatCard title="Monthly Expenses" value={summary.monthlyExpenses} icon={Wallet} delay={1} iconBg="bg-pink-50" iconColor="text-pink-600" />
+          <StatCard title="Monthly Income" value={summary.monthlyIncome} icon="TrendingUp" delay={0} iconBg="bg-violet-50" iconColor="text-violet-600" />
+          <StatCard title="Monthly Expenses" value={summary.monthlyExpenses} icon="Wallet" delay={1} iconBg="bg-pink-50" iconColor="text-pink-600" />
           <StatCard
             title="Monthly Net"
             value={summary.monthlyIncome - summary.monthlyExpenses}
-            icon={summary.monthlyIncome >= summary.monthlyExpenses ? ArrowUpRight : ArrowDownRight}
+            icon={summary.monthlyIncome >= summary.monthlyExpenses ? "ArrowUpRight" : "ArrowDownRight"}
             delay={2}
             variant={summary.monthlyIncome >= summary.monthlyExpenses ? "green" : "red"}
           />
@@ -64,10 +67,10 @@ export default async function PersonalDashboardPage() {
       <div className="mb-3 mt-6">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Overall</p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Total Income" value={summary.totalIncome} icon={TrendingUp} delay={3} iconBg="bg-emerald-50" iconColor="text-emerald-600" />
-          <StatCard title="Total Expenses" value={summary.totalExpenses} icon={Wallet} variant="red" delay={4} />
-          <StatCard title="Net Balance" value={summary.netBalance} icon={PiggyBank} variant={summary.netBalance >= 0 ? "green" : "red"} delay={5} />
-          <StatCard title="Total Saved" value={summary.totalSaved} icon={Target} delay={6} iconBg="bg-violet-50" iconColor="text-violet-600" />
+          <StatCard title="Total Income" value={summary.totalIncome} icon="TrendingUp" delay={3} iconBg="bg-emerald-50" iconColor="text-emerald-600" />
+          <StatCard title="Total Expenses" value={summary.totalExpenses} icon="Wallet" variant="red" delay={4} />
+          <StatCard title="Net Balance" value={summary.netBalance} icon="PiggyBank" variant={summary.netBalance >= 0 ? "green" : "red"} delay={5} />
+          <StatCard title="Total Saved" value={summary.totalSaved} icon="Target" delay={6} iconBg="bg-violet-50" iconColor="text-violet-600" />
         </div>
       </div>
 
@@ -152,6 +155,11 @@ export default async function PersonalDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Security Settings */}
+      <div className="mt-8">
+        <ChangePasswordForm />
+      </div>
     </div>
   );
 }

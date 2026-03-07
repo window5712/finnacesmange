@@ -70,7 +70,7 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
         <p className="font-semibold mb-2">{label}</p>
         {payload.map((entry, i) => (
           <p key={i} style={{ color: entry.color }}>
-            {entry.name}: ${entry.value.toLocaleString(undefined, { minimumFractionDigits: 0 })}
+            {entry.name}: PKR {entry.value.toLocaleString(undefined, { minimumFractionDigits: 0 })}
           </p>
         ))}
       </div>
@@ -98,7 +98,7 @@ export function DashboardCharts({ income, expenses, salaries }: Props) {
               tick={{ fontSize: 10 }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v) => `$${v >= 1000 ? (v / 1000).toFixed(0) + "k" : v}`}
+              tickFormatter={(v) => `PKR ${v >= 1000 ? (v / 1000).toFixed(0) + "k" : v}`}
             />
             <Tooltip content={<CustomTooltip />} />
             <Bar dataKey="income" name="Income" fill="#1A5C5A" radius={[4, 4, 0, 0]} />
@@ -136,7 +136,7 @@ export function DashboardCharts({ income, expenses, salaries }: Props) {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(v: number) => [`$${v.toLocaleString()}`, ""]}
+                formatter={(v: number) => [`PKR ${v.toLocaleString()}`, ""]}
                 contentStyle={{ borderRadius: "12px", fontSize: 12 }}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />

@@ -61,7 +61,7 @@ export function TransactionHistoryClient({ transactions }: Props) {
       <PageHeader
         title="Transaction History"
         subtitle={`${filtered.length} of ${transactions.length} transactions`}
-        icon={History}
+        icon="History"
       />
 
       {/* Filters */}

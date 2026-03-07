@@ -42,7 +42,7 @@ export function ProfitChart({ summary }: Props) {
           ))}
         </Pie>
         <Tooltip
-          formatter={(v: number) => [`$${v.toLocaleString()}`, ""]}
+          formatter={(v: number) => [`PKR ${v.toLocaleString()}`, ""]}
           contentStyle={{ borderRadius: "12px", fontSize: 11 }}
         />
         <Legend wrapperStyle={{ fontSize: 10 }} />

@@ -39,7 +39,7 @@ export function ActivityLogClient({ logs }: Props) {
       <PageHeader
         title="Activity Log"
         subtitle={`${logs.length} total actions recorded`}
-        icon={Activity}
+        icon="Activity"
       />
 
       {/* Filter Pills */}

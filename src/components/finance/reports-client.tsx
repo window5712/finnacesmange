@@ -25,7 +25,7 @@ function buildMonthlyData(income: Income[], expenses: Expense[], salaries: Salar
     ...salaries.map((s) => s.payment_date),
   ].filter(Boolean);
 
-  const uniqueMonths = [...new Set(allDates.map((d) => d.slice(0, 7)))].sort();
+  const uniqueMonths = Array.from(new Set(allDates.map((d) => d.slice(0, 7)))).sort();
 
   uniqueMonths.forEach((m) => {
     const label = new Date(m + "-01").toLocaleDateString("en-US", { month: "short", year: "numeric" });
@@ -80,15 +80,14 @@ export function ReportsClient({ income, expenses, salaries }: Props) {
   return (
     <div className="p-6 lg:p-8">
       <div className="flex items-center justify-between mb-6">
-        <PageHeader title="Reports & Analytics" subtitle="Financial performance overview" icon={BarChart3} />
+        <PageHeader title="Reports & Analytics" subtitle="Financial performance overview" icon="BarChart3" />
         <div className="flex gap-2 bg-white rounded-lg border p-1">
           {(["monthly", "yearly"] as const).map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors capitalize ${
-                period === p ? "bg-[#1A5C5A] text-white" : "text-muted-foreground hover:text-foreground"
-              }`}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors capitalize ${period === p ? "bg-[#1A5C5A] text-white" : "text-muted-foreground hover:text-foreground"
+                }`}
             >
               {p}
             </button>

@@ -49,7 +49,7 @@ export function ExpensesClient({ expenses }: Props) {
       <PageHeader
         title="Expenses"
         subtitle={`${expenses.length} records · Total: ${formatCurrency(total)}`}
-        icon={Receipt}
+        icon="Receipt"
         action={
           <Button
             onClick={() => { setEditItem(null); setDrawerOpen(true); }}
