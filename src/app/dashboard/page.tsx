@@ -13,21 +13,28 @@ import {
   Building2,
 } from "lucide-react";
 import { DashboardCharts } from "@/components/finance/dashboard-charts";
+import CompanyWallet from "@/components/layout/CompanyWallet";
+import { PartnerSummary } from "@/components/finance/partner-summary";
+import { TransactionTimeline } from "@/components/finance/transaction-timeline";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  const [incomeRes, expensesRes, salariesRes, investmentsRes] = await Promise.all([
+  const [incomeRes, expensesRes, salariesRes, investmentsRes, partnerRes, usersRes] = await Promise.all([
     supabase.from("income").select("*").order("date", { ascending: false }),
     supabase.from("expenses").select("*").order("date", { ascending: false }),
     supabase.from("salaries").select("*").order("payment_date", { ascending: false }),
     supabase.from("investments").select("*").order("date", { ascending: false }),
+    supabase.from("partner_transactions").select("*").order("transaction_date", { ascending: false }),
+    supabase.from("users").select("id, email, role")
   ]);
 
   const income = incomeRes.data || [];
   const expenses = expensesRes.data || [];
   const salaries = salariesRes.data || [];
   const investments = investmentsRes.data || [];
+  const partnerTx = partnerRes.data || [];
+  const users = usersRes.data || [];
 
   const summary = calculateFinanceSummary(income, expenses, salaries, investments);
 
@@ -42,6 +49,10 @@ export default async function DashboardPage() {
   const monthlySalaries = salaries
     .filter((s) => s.payment_date?.startsWith(currentMonth))
     .reduce((sum, s) => sum + Number(s.amount), 0);
+
+  const totalPartnerDeposits = partnerTx
+    .filter((p) => p.type === 'deposit')
+    .reduce((sum, p) => sum + Number(p.amount), 0);
 
   return (
     <div className="p-6 lg:p-8">
@@ -65,11 +76,16 @@ export default async function DashboardPage() {
 
       <div className="mb-3 mt-6">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Overall Balance</p>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard title="Total Income" value={summary.totalIncome} icon="BarChart3" variant="green" delay={3} />
           <StatCard title="Total Expenses" value={summary.totalExpenses} icon="Receipt" variant="red" delay={4} />
-          <StatCard title="Remaining Balance" value={summary.remainingBalance} icon="Wallet" variant={summary.remainingBalance >= 0 ? "default" : "red"} delay={5} />
+          <StatCard title="Partner Deposits" value={totalPartnerDeposits} icon="Building2" variant="teal" delay={5} />
+          <StatCard title="Estimated Net" value={summary.remainingBalance} icon="Wallet" variant={summary.remainingBalance >= 0 ? "default" : "red"} delay={6} />
         </div>
+      </div>
+      
+      <div className="mt-6 mb-3">
+        <CompanyWallet />
       </div>
 
       <div className="mt-6 mb-3">
@@ -129,6 +145,18 @@ export default async function DashboardPage() {
             </div>
           )}
         </div>
+      </div>
+
+      <PartnerSummary transactions={partnerTx} partners={users} />
+
+      <div className="mt-8">
+        <TransactionTimeline 
+          income={income} 
+          expenses={expenses} 
+          salaries={salaries} 
+          investments={investments} 
+          partnerTx={partnerTx} 
+        />
       </div>
     </div>
   );

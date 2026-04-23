@@ -30,6 +30,7 @@ const navItems = [
   { href: "/dashboard/expenses", label: "Expenses", icon: Receipt },
   { href: "/dashboard/salaries", label: "Salaries", icon: Users },
   { href: "/dashboard/investments", label: "Investments", icon: PiggyBank },
+  { href: "/dashboard/partner", label: "Partner Wallet", icon: Wallet },
   { href: "/dashboard/profit", label: "Profit Distribution", icon: PieChart },
   { href: "/dashboard/reports", label: "Reports", icon: BarChart3 },
   { href: "/dashboard/history", label: "Transaction History", icon: History },

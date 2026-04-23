@@ -249,3 +249,52 @@ export async function deleteInvestment(id: string) {
   revalidatePath("/dashboard/investments");
   return { success: true };
 }
+
+// Partner Transaction Actions
+export async function addPartnerTransaction(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const payload = {
+    partner_id: user.id,
+    type: formData.get("type") as string, // 'deposit' | 'withdrawal' | 'investment'
+    amount: parseFloat(formData.get("amount") as string),
+    transaction_date: formData.get("date") as string,
+    notes: formData.get("notes") as string || null,
+  };
+
+  const { data, error } = await supabase.from("partner_transactions").insert(payload).select().single();
+  if (error) return { error: error.message };
+
+  // Refresh wallet view
+  await supabase.rpc("refresh_company_wallet");
+
+  await logActivity(supabase, "Created partner transaction", "partner_transaction", data.id, {
+    type: payload.type,
+    amount: payload.amount,
+  });
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/partner");
+  return { data };
+}
+
+export async function deletePartnerTransaction(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("partner_transactions").delete().eq("id", id);
+  if (error) return { error: error.message };
+
+  // Refresh wallet view
+  await supabase.rpc("refresh_company_wallet");
+
+  await logActivity(supabase, "Deleted partner transaction", "partner_transaction", id);
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/partner");
+  return { success: true };
+}
+
+// One‑click Send Amount (partner withdrawal to company)
+export async function sendAmount(formData: FormData) {
+  // This creates a withdrawal type partner transaction
+  return await addPartnerTransaction(formData);
+}

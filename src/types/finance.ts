@@ -233,3 +233,24 @@ export const PERSONAL_EXPENSE_CATEGORIES = [
   "subscriptions",
   "other",
 ] as const;
+
+// Partner & Wallet Types
+export interface PartnerTransaction {
+  id: string;
+  partner_id: string;
+  type: "deposit" | "withdrawal" | "investment";
+  amount: number;
+  transaction_date: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface CompanyWallet {
+  total_income: number;
+  total_partner_deposits: number;
+  total_expenses: number;
+  total_salaries: number;
+  total_partner_outflows: number;
+  total_investments: number;
+  wallet_balance: number;
+}
