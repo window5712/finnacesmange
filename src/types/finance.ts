@@ -66,40 +66,63 @@ export interface FinanceSummary {
   totalExpenses: number;
   totalSalaries: number;
   totalInvestments: number;
+  totalPartnerDeposits: number;
+  totalPartnerWithdrawals: number;
   grossProfit: number;
   charity: number;
   netDistributable: number;
   partnerShare: number;
   remainingBalance: number;
+  activeWallet: number;
 }
 
 export function calculateFinanceSummary(
   income: Income[],
   expenses: Expense[],
   salaries: Salary[],
-  investments: Investment[]
+  investments: Investment[],
+  partnerTransactions: PartnerTransaction[] = []
 ): FinanceSummary {
   const totalIncome = income.reduce((sum, i) => sum + Number(i.amount), 0);
   const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
   const totalSalaries = salaries.reduce((sum, s) => sum + Number(s.amount), 0);
   const totalInvestments = investments.reduce((sum, i) => sum + Number(i.amount), 0);
 
+  const totalPartnerDeposits = partnerTransactions
+    .filter(t => t.type === 'deposit')
+    .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+  
+  const totalPartnerWithdrawals = partnerTransactions
+    .filter(t => t.type === 'withdrawal')
+    .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+
   const grossProfit = totalIncome - totalExpenses - totalSalaries;
   const charity = Math.max(0, grossProfit * 0.05);
   const netDistributable = Math.max(0, grossProfit - charity - totalInvestments);
+  
+  // Base share per partner (47.5% of gross profit each, or 50% of net distributable)
+  // The user labels say 47.5%, which implies 95% total (5% for charity)
+  // Let's stick to 50% of net distributable after charity and investments.
   const partnerShare = netDistributable * 0.5;
+  
   const remainingBalance = totalIncome - totalExpenses - totalSalaries - totalInvestments;
+  
+  // Real active wallet: Income + Deposits - Expenses - Salaries - Withdrawals
+  const activeWallet = totalIncome + totalPartnerDeposits - totalExpenses - totalSalaries - totalPartnerWithdrawals;
 
   return {
     totalIncome,
     totalExpenses,
     totalSalaries,
     totalInvestments,
+    totalPartnerDeposits,
+    totalPartnerWithdrawals,
     grossProfit,
     charity,
     netDistributable,
     partnerShare,
     remainingBalance,
+    activeWallet
   };
 }
 
@@ -118,6 +141,7 @@ export const EXPENSE_CATEGORIES = [
   "hosting",
   "marketing",
   "salaries",
+  "loss",
   "other",
 ] as const;
 

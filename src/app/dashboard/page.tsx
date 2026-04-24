@@ -41,11 +41,10 @@ export default async function DashboardPage(props: { searchParams: SearchParams 
   const users = usersRes.data || [];
 
   // All-time summary
-  const summary = calculateFinanceSummary(income, expenses, salaries, investments);
+  const summary = calculateFinanceSummary(income, expenses, salaries, investments, partnerTx);
 
-  const totalPartnerDeposits = partnerTx
-    .filter((p) => p.type === 'deposit')
-    .reduce((sum, p) => sum + Number(p.amount), 0);
+  const totalPartnerDeposits = summary.totalPartnerDeposits;
+  const totalPartnerWithdrawals = summary.totalPartnerWithdrawals;
 
   // Parse filters
   const timeframe = searchParams.timeframe || "this_month";
@@ -142,13 +141,24 @@ export default async function DashboardPage(props: { searchParams: SearchParams 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard title="Gross Profit" value={summary.grossProfit} icon="TrendingUp" delay={6} iconBg="bg-teal-50" iconColor="text-teal-700" />
           <StatCard title="Charity (5%)" value={summary.charity} icon="Heart" variant="amber" delay={7} />
-          <StatCard title="Yassen's Share (47.5%)" value={summary.partnerShare} icon="User" delay={8} iconBg="bg-violet-50" iconColor="text-violet-600" />
-          <StatCard title="Aryan's Share (47.5%)" value={summary.partnerShare} icon="User" delay={9} iconBg="bg-indigo-50" iconColor="text-indigo-600" />
+          
+          {/* Partner Shares - Subtracting their specific withdrawals would be ideal, but for the dashboard overview we show the base share minus total withdrawals split or just the raw share */}
+          <StatCard 
+            title="Yassen's Share (47.5%)" 
+            value={summary.partnerShare - (partnerTx.filter(t => t.partner_id === users.find(u => u.email.includes('yassen'))?.id && t.type === 'withdrawal').reduce((s, t) => s + Number(t.amount), 0))} 
+            icon="User" delay={8} iconBg="bg-violet-50" iconColor="text-violet-600" 
+          />
+          <StatCard 
+            title="Aryan's Share (47.5%)" 
+            value={summary.partnerShare - (partnerTx.filter(t => t.partner_id === users.find(u => u.email.includes('aryan'))?.id && t.type === 'withdrawal').reduce((s, t) => s + Number(t.amount), 0))} 
+            icon="User" delay={9} iconBg="bg-indigo-50" iconColor="text-indigo-600" 
+          />
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
         <StatCard title="Investment Reserve" value={summary.totalInvestments} icon="PiggyBank" delay={10} iconBg="bg-emerald-50" iconColor="text-emerald-600" />
+        <StatCard title="Partner Withdrawals" value={totalPartnerWithdrawals} icon="Building2" delay={10.5} variant="red" />
         <StatCard title="Company Budget (Net Distributable)" value={summary.netDistributable} icon="Building2" delay={11} iconBg="bg-teal-50" iconColor="text-teal-700" />
       </div>
 

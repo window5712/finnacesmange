@@ -164,20 +164,29 @@ export function PartnerTransactionsClient({
                 if (!res.error) {
                   window.location.reload();
                 } else {
+                  alert(res.error); // Show error to user
                   console.error(res.error);
                 }
               }} className="space-y-4">
                 <div className="grid gap-2">
+                  <label className="text-sm font-medium">Partner</label>
+                  <select name="partner_id" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                    {partners.map(p => (
+                      <option key={p.id} value={p.id}>{p.email}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid gap-2">
                   <label className="text-sm font-medium">Type</label>
                   <select name="type" required className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
                     <option value="deposit">Deposit to Company</option>
-                    <option value="withdrawal">Withdrawal from Company</option>
+                    <option value="withdrawal">Withdrawal from Company (Aryan/Yaseen Payment)</option>
                     <option value="investment">Investment / Reserve</option>
                   </select>
                 </div>
                 <div className="grid gap-2">
                   <label className="text-sm font-medium">Amount (PKR)</label>
-                  <Input name="amount" type="number" required placeholder="0.00" />
+                  <Input name="amount" type="number" step="0.01" required placeholder="0.00" />
                 </div>
                 <div className="grid gap-2">
                   <label className="text-sm font-medium">Date</label>

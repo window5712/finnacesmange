@@ -257,7 +257,7 @@ export async function addPartnerTransaction(formData: FormData) {
   if (!user) return { error: "Not authenticated" };
 
   const payload = {
-    partner_id: user.id,
+    partner_id: (formData.get("partner_id") as string) || user.id,
     type: formData.get("type") as string, // 'deposit' | 'withdrawal' | 'investment'
     amount: parseFloat(formData.get("amount") as string),
     transaction_date: formData.get("date") as string,
