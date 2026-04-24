@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { PartnerTransaction, formatCurrency } from "@/types/finance";
 import { DeleteConfirmDialog } from "./delete-confirm-dialog";
-import { deletePartnerTransaction } from "@/app/dashboard/actions";
+import { deletePartnerTransaction, addPartnerTransaction } from "@/app/dashboard/actions";
 import { Button } from "@/components/ui/button";
 
 export function PartnerTransactionsClient({
@@ -32,7 +32,7 @@ export function PartnerTransactionsClient({
   );
 
   const handleDelete = async () => {
-    if (!recordToDelete) return;
+    if (!recordToDelete) return { error: "No record selected" };
     const result = await deletePartnerTransaction(recordToDelete);
     if (result.success) {
       setData((prev) => prev.filter((item) => item.id !== recordToDelete));
@@ -40,6 +40,7 @@ export function PartnerTransactionsClient({
       console.error(result.error);
     }
     setIsDeleteDialogOpen(false);
+    return { success: result.success === true, error: result.error };
   };
 
   return (
@@ -201,7 +202,7 @@ export function PartnerTransactionsClient({
       )}
 
       <DeleteConfirmDialog
-        isOpen={isDeleteDialogOpen}
+        open={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleDelete}
         title="Delete Transaction"

@@ -16,8 +16,12 @@ import { DashboardCharts } from "@/components/finance/dashboard-charts";
 import CompanyWallet from "@/components/layout/CompanyWallet";
 import { PartnerSummary } from "@/components/finance/partner-summary";
 import { TransactionTimeline } from "@/components/finance/transaction-timeline";
+import { DashboardFilters } from "@/components/finance/dashboard-filters";
 
-export default async function DashboardPage() {
+type SearchParams = Promise<{ [key: string]: string | undefined }>;
+
+export default async function DashboardPage(props: { searchParams: SearchParams }) {
+  const searchParams = await props.searchParams;
   const supabase = await createClient();
 
   const [incomeRes, expensesRes, salariesRes, investmentsRes, partnerRes, usersRes] = await Promise.all([
@@ -36,41 +40,86 @@ export default async function DashboardPage() {
   const partnerTx = partnerRes.data || [];
   const users = usersRes.data || [];
 
+  // All-time summary
   const summary = calculateFinanceSummary(income, expenses, salaries, investments);
-
-  const now = new Date();
-  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const monthlyIncome = income
-    .filter((i) => i.date?.startsWith(currentMonth))
-    .reduce((sum, i) => sum + Number(i.amount), 0);
-  const monthlyExpenses = expenses
-    .filter((e) => e.date?.startsWith(currentMonth))
-    .reduce((sum, e) => sum + Number(e.amount), 0);
-  const monthlySalaries = salaries
-    .filter((s) => s.payment_date?.startsWith(currentMonth))
-    .reduce((sum, s) => sum + Number(s.amount), 0);
 
   const totalPartnerDeposits = partnerTx
     .filter((p) => p.type === 'deposit')
     .reduce((sum, p) => sum + Number(p.amount), 0);
 
+  // Parse filters
+  const timeframe = searchParams.timeframe || "this_month";
+  let startDate: string | null = null;
+  let endDate: string | null = null;
+  let periodLabel = "This Month";
+
+  if (timeframe === "custom") {
+    startDate = searchParams.start || null;
+    endDate = searchParams.end || null;
+    if (startDate && endDate) {
+      periodLabel = `${startDate} to ${endDate}`;
+    } else {
+      periodLabel = "Custom Period";
+    }
+  } else if (timeframe === "this_month") {
+    const start = new Date(); start.setDate(1);
+    const end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+    startDate = start.toISOString().split("T")[0];
+    endDate = end.toISOString().split("T")[0];
+    periodLabel = "This Month";
+  } else if (timeframe === "last_month") {
+    const start = new Date(); start.setMonth(start.getMonth() - 1); start.setDate(1);
+    const end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+    startDate = start.toISOString().split("T")[0];
+    endDate = end.toISOString().split("T")[0];
+    periodLabel = "Last Month";
+  } else if (timeframe === "this_year") {
+    const start = new Date(); start.setMonth(0); start.setDate(1);
+    const end = new Date(start.getFullYear(), 11, 31);
+    startDate = start.toISOString().split("T")[0];
+    endDate = end.toISOString().split("T")[0];
+    periodLabel = "This Year";
+  } else if (timeframe === "all_time") {
+    periodLabel = "All Time";
+  }
+
+  // Filtered helpers
+  const isDateInRange = (dateStr: string) => {
+    if (!startDate || !endDate) return true;
+    return dateStr >= startDate && dateStr <= endDate;
+  };
+
+  const filteredIncome = income.filter((i) => isDateInRange(i.date));
+  const filteredExpenses = expenses.filter((e) => isDateInRange(e.date));
+  const filteredSalaries = salaries.filter((s) => isDateInRange(s.payment_date));
+  const filteredInvestments = investments.filter((inv) => isDateInRange(inv.date));
+  const filteredPartnerTx = partnerTx.filter((p) => isDateInRange(p.transaction_date));
+
+  const periodIncome = filteredIncome.reduce((sum, i) => sum + Number(i.amount), 0);
+  const periodExpenses = filteredExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
+  const periodSalaries = filteredSalaries.reduce((sum, s) => sum + Number(s.amount), 0);
+
   return (
     <div className="p-6 lg:p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground" style={{ fontFamily: "Fraunces, serif" }}>
-          Finance Dashboard
-        </h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-        </p>
+      <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground" style={{ fontFamily: "Fraunces, serif" }}>
+            Finance Dashboard
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+          </p>
+        </div>
       </div>
 
+      <DashboardFilters />
+
       <div className="mb-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">This Month</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">{periodLabel}</p>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          <StatCard title="Monthly Income" value={monthlyIncome} icon="TrendingUp" variant="teal" delay={0} />
-          <StatCard title="Monthly Expenses" value={monthlyExpenses} icon="Receipt" delay={1} iconBg="bg-amber-50" iconColor="text-amber-600" />
-          <StatCard title="Salaries Paid" value={monthlySalaries} icon="Users" delay={2} iconBg="bg-blue-50" iconColor="text-blue-600" />
+          <StatCard title="Income" value={periodIncome} icon="TrendingUp" variant="teal" delay={0} />
+          <StatCard title="Expenses" value={periodExpenses} icon="Receipt" delay={1} iconBg="bg-amber-50" iconColor="text-amber-600" />
+          <StatCard title="Salaries Paid" value={periodSalaries} icon="Users" delay={2} iconBg="bg-blue-50" iconColor="text-blue-600" />
         </div>
       </div>
 
@@ -89,7 +138,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mt-6 mb-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Profit Distribution</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">All-Time Profit Distribution</p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard title="Gross Profit" value={summary.grossProfit} icon="TrendingUp" delay={6} iconBg="bg-teal-50" iconColor="text-teal-700" />
           <StatCard title="Charity (5%)" value={summary.charity} icon="Heart" variant="amber" delay={7} />
@@ -104,18 +153,18 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mt-8">
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Analytics Overview</p>
-        <DashboardCharts income={income} expenses={expenses} salaries={salaries} />
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Analytics Overview ({periodLabel})</p>
+        <DashboardCharts income={filteredIncome} expenses={filteredExpenses} salaries={filteredSalaries} />
       </div>
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl p-5 card-shadow">
-          <h3 className="font-semibold text-sm mb-4" style={{ fontFamily: "Fraunces, serif" }}>Recent Income</h3>
-          {income.slice(0, 5).length === 0 ? (
+          <h3 className="font-semibold text-sm mb-4" style={{ fontFamily: "Fraunces, serif" }}>Recent Income ({periodLabel})</h3>
+          {filteredIncome.slice(0, 5).length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">No income records yet</p>
           ) : (
             <div className="space-y-3">
-              {income.slice(0, 5).map((item) => (
+              {filteredIncome.slice(0, 5).map((item) => (
                 <div key={item.id} className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium">{item.project_name}</p>
@@ -128,12 +177,12 @@ export default async function DashboardPage() {
           )}
         </div>
         <div className="bg-white rounded-2xl p-5 card-shadow">
-          <h3 className="font-semibold text-sm mb-4" style={{ fontFamily: "Fraunces, serif" }}>Recent Expenses</h3>
-          {expenses.slice(0, 5).length === 0 ? (
+          <h3 className="font-semibold text-sm mb-4" style={{ fontFamily: "Fraunces, serif" }}>Recent Expenses ({periodLabel})</h3>
+          {filteredExpenses.slice(0, 5).length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">No expense records yet</p>
           ) : (
             <div className="space-y-3">
-              {expenses.slice(0, 5).map((item) => (
+              {filteredExpenses.slice(0, 5).map((item) => (
                 <div key={item.id} className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium">{item.description}</p>
@@ -150,12 +199,13 @@ export default async function DashboardPage() {
       <PartnerSummary transactions={partnerTx} partners={users} />
 
       <div className="mt-8">
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Transaction Timeline ({periodLabel})</p>
         <TransactionTimeline 
-          income={income} 
-          expenses={expenses} 
-          salaries={salaries} 
-          investments={investments} 
-          partnerTx={partnerTx} 
+          income={filteredIncome} 
+          expenses={filteredExpenses} 
+          salaries={filteredSalaries} 
+          investments={filteredInvestments} 
+          partnerTx={filteredPartnerTx} 
         />
       </div>
     </div>
