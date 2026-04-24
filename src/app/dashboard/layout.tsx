@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../../supabase/server";
 import { AppSidebar } from "@/components/app-sidebar";
 import { logger } from "@/utils/logger";
+import { RealtimeSync } from "@/components/finance/realtime-sync";
 
 export default async function DashboardLayout({
   children,
@@ -55,6 +56,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-[#F7F5F2]">
+      <RealtimeSync />
       <AppSidebar
         userRole={profile?.role || "user"}
         userName={(profile as any)?.full_name || user.email?.split("@")[0] || "User"}
